@@ -2,7 +2,9 @@
 
 > **Reusable playbooks for autonomous AI agent loops — copy, customize, ship.**
 
-![Banner](assets/banner.svg)
+![Banner](assets/banner.png)
+
+Visual system: [`references/visual-identity.md`](references/visual-identity.md) · social preview: [`assets/social-preview.png`](assets/social-preview.png)
 
 A growing catalog of battle-tested **recipes** for autonomous AI agent workflows: each one is a self-contained, opinionated package that captures a cron-driven loop (the agent, the prompt, the schedule, the scripts, the secrets layout, the failure modes) so you can drop it into any scheduler that runs prompts on a cadence and have it working the same day — not the same quarter.
 
@@ -126,9 +128,10 @@ agent-loopkit/
 ├── SECURITY.md                     # how secrets are handled
 ├── CODE_OF_CONDUCT.md              # community norms
 ├── assets/
-│   ├── banner.svg / banner.png     # README header
-│   ├── logo.svg / logo.png         # project mark
-│   └── icon.svg                    # small icon
+│   ├── banner.png                  # README header
+│   ├── social-preview.png          # GitHub social preview
+│   ├── logo.png                    # project mark
+│   └── icon.png                    # small icon
 ├── recipes/                        # the actual playbooks (see recipes/README.md)
 ├── templates/                      # blank scaffolds for new recipes
 ├── scripts/                        # repo-level tools (validate, lint)

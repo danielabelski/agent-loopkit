@@ -2,8 +2,8 @@
 """Repo-level structure validator.
 
 Checks:
-- assets/{banner,logo,icon}.svg exist.
-- README.md links to assets/banner.svg and references the tagline.
+- assets/{banner,logo,icon}.png exist.
+- README.md links to assets/banner.png and references the tagline.
 - LICENSE exists and contains MIT.
 - SECURITY.md exists.
 - CHANGELOG.md exists and references the current Unreleased section.
@@ -26,14 +26,14 @@ def main() -> int:
             issues.append(f"Missing required root file: {required}")
 
     # Branding assets
-    for asset in ["assets/banner.svg", "assets/logo.svg", "assets/icon.svg"]:
+    for asset in ["assets/banner.png", "assets/logo.png", "assets/icon.png", "assets/social-preview.png"]:
         if not (repo / asset).exists():
             issues.append(f"Missing asset: {asset}")
 
     # README references banner
     readme = (repo / "README.md").read_text(encoding="utf-8") if (repo / "README.md").exists() else ""
-    if "assets/banner.svg" not in readme:
-        issues.append("README.md does not reference assets/banner.svg")
+    if "assets/banner.png" not in readme:
+        issues.append("README.md does not reference assets/banner.png")
     if "copy · customize · ship" not in readme and "copy, customize, ship" not in readme:
         issues.append("README.md does not include the tagline 'copy · customize · ship'")
 

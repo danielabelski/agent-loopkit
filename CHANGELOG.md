@@ -25,7 +25,7 @@ All notable changes to this repository are documented here. Dates are in
 - Repo description: "Reusable playbooks for autonomous AI agent loops — copy, customize, ship."
 - Tagline: *copy · customize · ship*.
 - Recipe #1: `tgo-full-funnel-autopilot`.
-- Branding assets (`assets/banner.svg`, `assets/logo.svg`, `assets/icon.svg`).
+- Branding assets (`assets/banner.png`, `assets/logo.png`, `assets/icon.png`).
 - Recipe validator + repo validator + pytest suite (16 tests at v0.1.0).
 - `.github/workflows/validate.yml` CI.
 
