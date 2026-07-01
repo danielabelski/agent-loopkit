@@ -6,10 +6,10 @@ Thanks for landing here. This repo is a catalog of **reusable playbooks for auto
 
 1. Copy `RECIPE_TEMPLATE.md` → `recipes/<your-slug>/RECIPE.md`.
 2. Fill in every section. The validator will reject incomplete recipes.
-3. Add `cron.config.yaml` + `prompts/system.txt`.
+3. Add `cron.config.yaml` and either `prompts/system.txt` (LLM recipes) or `prompts/*.env` (script-only recipes).
 4. Run `python3 scripts/validate_recipe.py recipes/<your-slug>/` — must exit 0.
 5. Add a smoke test under `recipes/<your-slug>/tests/`.
-6. Open a PR. CI will lint, validate, and run the smoke test.
+6. Open a PR. CI will lint, validate, run the smoke test, and scan for committed secrets.
 
 ---
 
@@ -20,7 +20,7 @@ A good recipe in this repo:
 - **Solves one loop, not a system.** If your loop depends on three other cron jobs, that's three recipes — extract them.
 - **Has a verifiable artifact.** The loop produces something the operator can see (a post, a file, a deployment, a webhook call). "The agent reflects" is not an artifact.
 - **Documents its own failure modes.** If you can't list three ways it can break in production, you haven't run it in production yet.
-- **Uses generic variable names.** Replace `Tech Guru Online` with `<BUSINESS_NAME>`. Brand assets live in `assets/brand/` and are easy to swap.
+- **Uses generic variable names.** The recipe should not mention your business name, your region, or your customer's brand. Use `<BUSINESS_NAME>`, `<REGION>`, `<BRAND_ASSET>`, etc. Brand assets live in `assets/brand/` and are easy to swap.
 - **Has a smoke test.** A 30-line pytest that proves the prompt parses, the history file is appendable, and a dry run completes without writing to live APIs.
 
 ## Recipe structure (canonical)
@@ -30,7 +30,8 @@ recipes/<slug>/
 ├── RECIPE.md             # the canonical playbook (required)
 ├── cron.config.yaml      # the schedule + delivery settings (required)
 ├── prompts/
-│   └── system.txt        # the agent's system prompt (required)
+│   └── system.txt        # the agent's system prompt (required for LLM recipes)
+│   # OR: scripts-only recipes can ship prompts/*.env files instead
 ├── scripts/              # any helpers the loop depends on (optional)
 ├── assets/               # logos, references, sample posts (optional)
 │   └── brand/            # brand assets the agent must use
@@ -41,6 +42,8 @@ recipes/<slug>/
     ├── test_structure.py # validator-driven structural test
     └── test_smoke.py     # one dry-run that proves the loop wires up
 ```
+
+A recipe can ship one or more of each optional directory. The validator enforces only the required ones.
 
 ## Authoring workflow
 
@@ -72,8 +75,8 @@ recipes/<slug>/
 ## Secrets — never commit them
 
 - Tokens, page IDs, customer data, live history files → **never in this repo**.
-- Recipes reference them by **path** (e.g., `~/.hermes/secure/facebook/tgo_page_access_token.txt`) and the deploy env provides them.
-- See [`SECURITY.md`](SECURITY.md) for the exact layout.
+- Recipes reference them by **path or env-var name** (e.g., `<SERVICE>_API_KEY_FILE=/run/secrets/<name>`) and the deploy env provides them.
+- See [`SECURITY.md`](SECURITY.md) for the exact layout and the `__replace_me__` sentinel convention.
 - The CI runs a secrets scan on every PR; if it finds a real token, the PR is auto-rejected.
 
 ## Releases
@@ -89,6 +92,8 @@ When you bump a recipe's version, also add an entry to the repo-level `CHANGELOG
 ## Code of conduct
 
 Be useful. Don't be clever. If a recipe you wrote breaks for someone else, you fix it; if you can't, you deprecate it explicitly and link to the replacement.
+
+See [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) for the full community norms.
 
 ## Questions?
 

@@ -19,12 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-## Recipe-level note
-
-Recipes in this repository are **templates**. The brand assets, page tokens,
-customer data, and live history files referenced inside any recipe are
-illustrative only. You must replace them with your own before running the loop
-in production. See `SECURITY.md` for the full disclaimer.
