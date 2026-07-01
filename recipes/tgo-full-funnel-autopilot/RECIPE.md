@@ -43,7 +43,7 @@ The comment guard is a separate concern: it has its own loop and its own failure
 | `BUSINESS_NAME` | `prompts/system.txt` | `Tech Guru Online` | Your business / agency name |
 | `BRAND_LOGO_PATH` | `assets/brand/logo.jpg` | TGO circular logo (teal/white/blue) | Your logo (square, ~512×512 minimum) |
 | `PRIMARY_REGION` | `prompts/system.txt` | `Puerto Rico` | Where your customers are |
-| `WHATSAPP_NUMBER` | `prompts/system.txt` | `+1 787 445 2086` | Your WhatsApp business number |
+| `WHATSAPP_NUMBER` | `prompts/system.txt` | `+1 787 000 0000` (placeholder) | Your WhatsApp business number |
 | `LANGUAGE` | `prompts/system.txt` | `Spanish (es-PR)` | `Spanish`, `English`, or bilingual |
 | `OFFER_PRICE` | `examples/env.template` | `$350 (Website Starter)` | Your price point + offer name |
 | `FACEBOOK_PAGE_ID` | `examples/env.template` | Tech Guru Online Page id | Your Facebook Page id |

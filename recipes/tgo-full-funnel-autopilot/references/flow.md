@@ -30,7 +30,7 @@ Per run:
 
 10. Append a JSON object to `/root/techguruonline-automation/history/campaigns.jsonl` with niche, slug, offer, landing_path, landing_url, image_path, story_path, caption, reviewer_status, post ids/permalink, timestamp.
 
-11. Keep tone compact, business-like, direct. CTA: WhatsApp +1 787 445 2086. Avoid Window Tint/client/prospect-specific content unless Kevin explicitly approves.
+11. Keep tone compact, business-like, direct. CTA: WhatsApp `<WHATSAPP_NUMBER>`. Avoid Window Tint/client/prospect-specific content unless the operator explicitly approves.
 
 ---
 

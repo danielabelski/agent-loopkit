@@ -2,7 +2,7 @@
 # Etsy Logo Pack Pipeline — Stage 3 launcher (Pinterest)
 #
 # Publishes already-drafted Etsy packs as Pinterest pins. Dry-run by default.
-# Set PINTEREST_DRY_RUN=0 ONLY after Kevin explicitly authorizes publishing.
+# Set PINTEREST_DRY_RUN=0 ONLY after the operator explicitly authorizes publishing.
 
 set -euo pipefail
 
