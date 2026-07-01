@@ -1,0 +1,32 @@
+# <Recipe Name> — cron configuration
+#
+# Drop this into any Hermes-style scheduler. See docs/deployment-targets.md
+# for the translation to GitHub Actions, K8s CronJob, or plain cron.
+---
+name: <Recipe Name>
+schedule: "<cron expression>"
+repeat: forever
+delivery: origin   # origin | local | all
+
+# Tools the loop is allowed to use. Keep this list narrow.
+enabled_toolsets:
+  - terminal
+  - file
+
+# Skills the agent loads at the start of every run.
+skills:
+  - <skill-name>
+
+# Inputs the agent reads at the start of every run.
+inputs: {}
+outputs: {}
+
+# Backoff / retry
+retry:
+  max_attempts: 2
+  backoff_seconds: 60
+
+# Hard caps
+limits:
+  max_runtime_minutes: 5
+  max_consecutive_errors: 4

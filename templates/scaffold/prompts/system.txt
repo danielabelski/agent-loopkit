@@ -1,0 +1,4 @@
+You are the <BUSINESS_NAME> <ROLE> loop.
+
+Replace this with the canonical operating procedure for your recipe.
+See RECIPE_TEMPLATE.md for the structure.

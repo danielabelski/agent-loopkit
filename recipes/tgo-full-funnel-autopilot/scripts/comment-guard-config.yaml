@@ -1,0 +1,37 @@
+# Companion loop: TGO Full Funnel $350 Comment Guard
+#
+# Script-only cron — no LLM, no agent loop. Reads the page token from disk,
+# fetches the page's recent full-funnel posts, and posts a fixed Spanish reply
+# to any post that doesn't yet have a price comment from the Page.
+#
+# This file mirrors the production script structure. The actual script is
+# deliberately not vendored here to avoid carrying Python that may drift out
+# of sync; the production copy lives in /root/techguruonline-automation/full_funnel_price_comment_guard.py.
+
+name: TGO Full Funnel $350 Comment Guard
+schedule: "45 1,15,20 * * *"
+repeat: forever
+deliver: origin
+no_agent: true
+
+script: scripts/comment-keyword-private-reply-bot.sh
+workdir: /root/techguruonline-automation
+
+# Env vars the script reads. Override per-deploy.
+env:
+  TGO_PAGE_ACCESS_TOKEN_FILE: /root/.hermes/secure/facebook/tgo_page_access_token.txt
+  TGO_USER_ACCESS_TOKEN_FILE: /root/.hermes/secure/facebook/tgo_user_access_token.txt
+  TGO_HISTORY_FILE: /root/techguruonline-automation/history/campaigns.jsonl
+  TGO_COMMENT_LOG: /root/techguruonline-automation/history/full_funnel_price_comment_log.jsonl
+  TGO_PRICE_GUARD_MAX_COMMENTS: "6"
+  TGO_PRICE_GUARD_MAX_POSTS: "12"
+  GRAPH_API_VERSION: "v21.0"
+
+# Backoff
+retry:
+  max_attempts: 1   # script-only; don't auto-retry Graph API failures
+  backoff_seconds: 0
+
+limits:
+  max_runtime_minutes: 3
+  max_consecutive_errors: 8

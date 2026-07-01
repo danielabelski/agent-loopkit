@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Build / dist
+build/
+dist/
+*.whl
+
+# Secrets / local config — never commit
+.env
+.env.*
+!.env.template
+secrets/
+*.pem
+*.key
+*_token.txt
+*_access_token.txt
+*page_id.txt
+
+# Live history / log files from production runs
+history/
+*.jsonl
+!examples/*.jsonl
+!tests/fixtures/*.jsonl
+
+# Local brand assets that aren't safe to share
+assets/brand/private/
+
+# Hermes runtime
+.hermes/
+.cache/
+
+# Output / generated
+output/
+artifacts/
+logs/
+*.log
+
+# CI / GitHub
+.github/workflows/local-*.yml

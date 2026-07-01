@@ -1,0 +1,59 @@
+# TGO Full Funnel Autopilot — cron configuration
+#
+# Drop this into any Hermes-style scheduler. The shape here matches the
+# `hermes cronjob create --from` payload. For GitHub Actions or plain cron,
+# see docs/deployment-targets.md for the equivalent translation.
+---
+name: TGO Full Funnel Autopilot
+schedule: "0 1,15,20 * * *"
+repeat: forever
+delivery: origin   # back to the operator's chat on completion
+
+# Tools the loop is allowed to use. Keep this list narrow: every tool is an
+# attack surface in production.
+enabled_toolsets:
+  - terminal
+  - file
+  - vision
+  - web
+
+# Skills the agent loads at the start of every run. Order matters: the agent
+# loads them in this sequence so the most-general skill is available first.
+skills:
+  - local-business-funnel-autopilot
+  - facebook-platform-automation
+  - local-web-service-deployment
+  - image-generation-workflows
+
+# Inputs the agent reads at the start of every run.
+inputs:
+  history_file: history/campaigns.jsonl
+  reference_dir: facebook-funnel-campaign
+  brand_logo: assets/brand/logo.jpg
+  niche_pool: references/niche-pool.txt
+  flow_md: FLOW.md   # canonical operating procedure (see recipes/.../references/flow.md)
+
+# Outputs the agent writes. Paths are absolute by convention; runtime may rewrite them.
+outputs:
+  landings_dir: techguruonline-automation/landings
+  history_append: history/campaigns.jsonl
+  site_sync_script: ~/.hermes/scripts/tgo_site_content_sync.py
+
+# Companion loop config — the comment guard runs separately on its own cadence.
+companions:
+  - name: TGO Full Funnel $350 Comment Guard
+    schedule: "45 1,15,20 * * *"   # 45 min after the main loop
+    script: scripts/comment-keyword-private-reply-bot.py
+    no_agent: true                 # script-only, no LLM
+    config: scripts/comment-guard-config.yaml
+
+# Backoff / retry on transient failure.
+retry:
+  max_attempts: 2
+  backoff_seconds: 120
+
+# Hard caps to prevent runaway loops.
+limits:
+  max_runtime_minutes: 8
+  max_new_posts_per_run: 3
+  max_consecutive_errors: 4   # auto-pause the cron after this many consecutive failures
