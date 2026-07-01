@@ -1,0 +1,94 @@
+# Robinhood Safe Growth — 3-stage cron configuration
+#
+# All three stages are script-only (no_agent: true). They call
+# python3 robinhood_mcp_snapshot.py <mode> which produces a read-only
+# JSON snapshot. The cron delivers the snapshot to the operator's chat;
+# the operator (not the cron) reasons about it and approves any action.
+#
+# Schedule coordination:
+# - Stage 1 fires Mon-Fri 10:15 ET / 16:15 UTC (after opening volatility).
+# - Stage 2 fires Mon-Fri 14:45 ET / 20:45 UTC (before close).
+# - Stage 3 fires Tue-Sat 04:30 UTC (after Monday-Friday closes).
+#
+# Cron expressions assume UTC. If RH_TIMEZONE is changed, update these.
+
+# ---------------------------------------------------------------------------
+# Stage 1: Entry Decision — morning snapshot + recommendation
+# ---------------------------------------------------------------------------
+stage1:
+  name: Robinhood Safe Growth - Daily Entry Decision
+  schedule: "15 16 * * 1-5"
+  repeat: forever
+  delivery: origin
+  no_agent: true
+
+  script: scripts/robinhood_safe_growth_entry.sh
+  workdir: /root/.hermes/scripts
+
+  env:
+    RH_SAFE_GROWTH_MODE: "entry"
+    RH_NOTIFY_TELEGRAM: "1"
+    RH_REDACT_ACCOUNTS: "1"
+
+  limits:
+    max_runtime_minutes: 3
+    max_consecutive_errors: 4
+
+# ---------------------------------------------------------------------------
+# Stage 2: Afternoon Defense — check open positions + market into close
+# ---------------------------------------------------------------------------
+stage2:
+  name: Robinhood Safe Growth - Afternoon Defense
+  schedule: "45 20 * * 1-5"
+  repeat: forever
+  delivery: origin
+  no_agent: true
+
+  script: scripts/robinhood_safe_growth_defense.sh
+  workdir: /root/.hermes/scripts
+
+  env:
+    RH_SAFE_GROWTH_MODE: "defense"
+    RH_NOTIFY_TELEGRAM: "1"
+    RH_REDACT_ACCOUNTS: "1"
+
+  limits:
+    max_runtime_minutes: 3
+    max_consecutive_errors: 4
+
+# ---------------------------------------------------------------------------
+# Stage 3: Mission Control — nightly review (Tue-Sat, after Monday-Friday close)
+# ---------------------------------------------------------------------------
+stage3:
+  name: Robinhood Mission Control - Daily Profit/Risk Review
+  schedule: "30 4 * * 2-6"
+  repeat: forever
+  delivery: origin
+  no_agent: true
+
+  script: scripts/robinhood_safe_growth_mission.sh
+  workdir: /root/.hermes/scripts
+
+  env:
+    RH_SAFE_GROWTH_MODE: "mission"
+    RH_NOTIFY_TELEGRAM: "0"   # silent: only writes to notes file
+    RH_REDACT_ACCOUNTS: "1"
+    RH_MISSION_NOTES_FILE: "/root/.hermes/state/robinhood_safe_growth_notes.json"
+
+  limits:
+    max_runtime_minutes: 10
+    max_consecutive_errors: 2
+
+# ---------------------------------------------------------------------------
+# Coordination between stages
+# ---------------------------------------------------------------------------
+coordination:
+  # Stage 2 reads positions captured by Stage 1's snapshot.
+  # The snapshot is recomputed each run (read-only), not shared between stages.
+  stage2_independent: true
+
+  # Stage 3 reads Mission Control notes from the previous trading day.
+  stage3_reads_from: stage1_stage2_history
+
+  # If any stage is paused for >1 day, alert the operator.
+  pause_alert_hours: 24

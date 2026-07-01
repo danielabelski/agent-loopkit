@@ -60,7 +60,13 @@ See `RECIPE_TEMPLATE.md` for the exact template, and `docs/authoring-a-recipe.md
 
 ## Recipes
 
-Browse the full catalog at [`recipes/README.md`](recipes/README.md).
+Browse the full catalog at [`recipes/README.md`](recipes/README.md). Current entries:
+
+| Recipe | Domain | Cadence | Status |
+|---|---|---|---|
+| [`tgo-full-funnel-autopilot`](recipes/tgo-full-funnel-autopilot/) | Local-business Facebook lead funnel | 3×/day | **production** (paused for review) |
+| [`etsy-logo-pack-pipeline`](recipes/etsy-logo-pack-pipeline/) | Digital-assets Etsy + Pinterest | 4×/day + 1×/day | **production** (paused for review) |
+| [`robinhood-safe-growth`](recipes/robinhood-safe-growth/) | Read-only equity decision-support | 3×/day (Mon-Fri) | **production** (paused for review) |
 
 Each recipe entry links to its own directory. The catalog is intentionally heterogeneous — different domains, different cadences, different platforms — so you can compare shapes and steal patterns across them.
 
