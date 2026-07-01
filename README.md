@@ -63,6 +63,7 @@ See `RECIPE_TEMPLATE.md` for the exact template, and `docs/authoring-a-recipe.md
 | Recipe | Domain | Cadence | Status |
 |---|---|---|---|
 | [`tgo-full-funnel-autopilot`](recipes/tgo-full-funnel-autopilot/) | Local-business Facebook lead funnel (niche → landing → post → comment guard) | 3×/day | **Production** (paused for review) |
+| [`etsy-logo-pack-pipeline`](recipes/etsy-logo-pack-pipeline/) | Digital-assets Etsy + Pinterest (generate → draft → pin, 3-stage pipeline) | 4×/day + 1×/day | **Production** (paused for review) |
 
 More recipes coming. Each one follows the same template so you can fork, rename, and ship.
 

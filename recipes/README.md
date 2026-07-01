@@ -7,6 +7,7 @@
 | Recipe | Domain | Cadence | Status |
 |---|---|---|---|
 | [`tgo-full-funnel-autopilot/`](tgo-full-funnel-autopilot/) | Local-business Facebook lead funnel (niche → landing → post → comment guard) | 3×/day (`0 1,15,20 * * *`) | **production** (paused for review) |
+| [`etsy-logo-pack-pipeline/`](etsy-logo-pack-pipeline/) | Digital-assets Etsy + Pinterest (3-stage pipeline: generate → draft → pin) | 4×/day + 1×/day | **production** (paused for review) |
 
 ## Adding a new recipe
 

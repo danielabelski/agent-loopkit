@@ -1,0 +1,99 @@
+# Etsy Logo Pack Pipeline — 3-stage cron configuration
+#
+# This single YAML configures all three stages of the pipeline. Drop each
+# stage into Hermes cron (or any Hermes-style scheduler). All three stages
+# run as script-only (no_agent: true) — no LLM in the hot path.
+#
+# Schedule coordination:
+# - Stage 1 runs at 0,6,12,18 (every 6h)
+# - Stage 2 runs daily at 5:30 (off-peak, before Stage 1's 6:00 batch)
+# - Stage 3 runs at 0:45, 6:45, 12:45, 18:45 (45 min after Stage 1, so the
+#   new packs are archived before Pinterest picks them up)
+
+# ---------------------------------------------------------------------------
+# Stage 1: Generate packs + save Etsy drafts
+# ---------------------------------------------------------------------------
+stage1:
+  name: Etsy Logo Pack Pipeline Stage 1
+  schedule: "0 0,6,12,18 * * *"
+  repeat: forever
+  delivery: local
+  no_agent: true
+
+  script: scripts/etsy_logo_pack_cron_launcher.sh
+  workdir: /root/etsy-logo-packs
+
+  env:
+    ETSY_CREATE_DRAFTS: "1"
+    ETSY_NOTIFY_DISCORD: "0"
+    ETSY_EDITOR_WAIT_ROUNDS: "3"
+    OUTPUT_ARCHIVE_DIR: /root/etsy-logo-packs
+    THEME_CATALOG_FILE: /root/etsy-logo-packs/theme_catalog.json
+    IMAGE_API_KEY_FILE: /root/.hermes/secure/openai/api_key.txt
+
+  limits:
+    max_runtime_minutes: 30
+    max_consecutive_errors: 4
+
+# ---------------------------------------------------------------------------
+# Stage 2: Theme catalog auto-refill + auto-reviewer
+# ---------------------------------------------------------------------------
+stage2:
+  name: Etsy Theme Catalog Autonomous Refill + Reviewer
+  schedule: "30 5 * * *"
+  repeat: forever
+  delivery: local
+  no_agent: true
+
+  script: scripts/etsy_theme_catalog_refill_launcher.sh
+  workdir: /root/etsy-logo-packs
+
+  env:
+    APPROVED_THRESHOLD: "32"
+    APPROVED_TARGET: "96"
+    MAX_CANDIDATES: "120"
+    MIN_SCORE_FOR_APPROVE: "70"
+    DUPLICATE_RISK_REJECT: "high"
+
+  limits:
+    max_runtime_minutes: 15
+    max_consecutive_errors: 2
+
+# ---------------------------------------------------------------------------
+# Stage 3: Pinterest publish (45 min after Stage 1)
+# ---------------------------------------------------------------------------
+stage3:
+  name: Pinterest publish Etsy logo packs - after Etsy drafts
+  schedule: "45 0,6,12,18 * * *"
+  repeat: forever
+  delivery: origin
+  no_agent: true
+
+  script: scripts/pinterest_publish_cron_launcher.sh
+  workdir: /root/etsy-logo-packs
+
+  env:
+    PINTEREST_DRY_RUN: "1"   # CRITICAL: keep 1 unless explicitly publishing
+    PINTEREST_PROFILE_DIR: /root/snap/chromium/common/pinterest-profile-account2
+    PINTEREST_CDP_URL: http://127.0.0.1:9334
+    PIN_ABOUT_MAX_CHARS: "100"
+
+  limits:
+    max_runtime_minutes: 10
+    max_consecutive_errors: 3
+
+# ---------------------------------------------------------------------------
+# Coordination between stages (informational, not enforced by the scheduler)
+# ---------------------------------------------------------------------------
+coordination:
+  # Stage 3 must NOT start until Stage 1's batch is fully archived.
+  # The 45-minute schedule gap handles this — verify with:
+  #   find /root/etsy-logo-packs -name 'batch-summary.json' -newer <stage1_log>
+  stage3_waits_for: stage1
+
+  # If Stage 2 doesn't refill enough, Stage 1 fails closed
+  # (it requires MIN_APPROVED_THEMES=4 in the catalog).
+  stage1_requires: stage2_inventory
+
+  # If any stage is paused for >1 day, alert the operator.
+  pause_alert_hours: 24

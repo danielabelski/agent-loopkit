@@ -37,9 +37,9 @@ REQUIRED_RECIPE_SECTIONS = [
     "What this loop does",
     "Why this loop exists",
     "Variables you must change",
-    "The prompt",
-    "Schedule",
-    "Skills the agent loads",
+    # "The prompt" — required for LLM-driven recipes; replaced by "The three configs"
+    # for script-only pipelines. The validator accepts either via the regex below.
+    "Skills",
     "Inputs",
     "Outputs",
     "Secrets required",
@@ -47,6 +47,18 @@ REQUIRED_RECIPE_SECTIONS = [
     "Pitfalls",
     "Verification checklist",
 ]
+
+# Section-name aliases — "The prompt" / "The three configs" / etc. all satisfy
+# the prompt/config slot. "Skills the agent loads" / "Skills the operator loads"
+# both satisfy the skills slot.
+SECTION_ALIASES = {
+    "The prompt": ["The prompt", "The three configs", "The configuration"],
+    "Skills": [
+        "Skills the agent loads",
+        "Skills the operator loads",
+        "Skills the pipeline loads",
+    ],
+}
 
 SECRET_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"ghp_[A-Za-z0-9]{20,}"), "GitHub PAT"),
@@ -79,17 +91,34 @@ def validate_recipe(slug_dir: Path) -> list[str]:
         return issues
     if not cron_yaml.exists():
         issues.append("Missing cron.config.yaml")
+    # prompts/system.txt is required for LLM-driven recipes. Script-only
+    # pipelines (no_agent=true) can ship a single placeholder file or split
+    # the config across prompts/*.env — both shapes pass if at least one
+    # prompts/* file exists.
     if not prompt_txt.exists():
-        issues.append("Missing prompts/system.txt")
+        prompts_dir = slug_dir / "prompts"
+        any_prompt = prompts_dir.is_dir() and any(prompts_dir.iterdir())
+        if not any_prompt:
+            issues.append(
+                "Missing prompts/system.txt (and prompts/ directory is empty). "
+                "Either provide a system prompt, or split the config into prompts/*.env files."
+            )
     if not env_template.exists():
         issues.append("Missing examples/env.template")
 
     # RECIPE.md sections
     text = recipe_md.read_text(encoding="utf-8")
     for section in REQUIRED_RECIPE_SECTIONS:
-        pattern = re.compile(rf"^#{{2,3}}\s+{re.escape(section)}", re.MULTILINE | re.IGNORECASE)
-        if not pattern.search(text):
-            issues.append(f"RECIPE.md missing required section: '{section}'")
+        # Use alias list if available, else the section name itself
+        names = SECTION_ALIASES.get(section, [section])
+        matched = False
+        for name in names:
+            pattern = re.compile(rf"^#{{2,3}}\s+{re.escape(name)}", re.MULTILINE | re.IGNORECASE)
+            if pattern.search(text):
+                matched = True
+                break
+        if not matched:
+            issues.append(f"RECIPE.md missing required section: '{names[0]}' (or any alias)")
 
     # Variables table rows (>= 3)
     if "| Variable |" in text:
@@ -135,10 +164,28 @@ def validate_recipe(slug_dir: Path) -> list[str]:
             if not isinstance(data, dict):
                 issues.append("cron.config.yaml is not a YAML mapping")
             else:
-                if "schedule" not in data:
-                    issues.append("cron.config.yaml missing 'schedule' field")
-                if "delivery" not in data:
-                    issues.append("cron.config.yaml missing 'delivery' field")
+                # Accept either a single-job shape (schedule/delivery at root)
+                # or a multi-stage shape (stage1/stage2/stage3 blocks at root).
+                has_schedule = "schedule" in data
+                has_delivery = "delivery" in data
+                stage_blocks = [k for k in data if k.startswith("stage") and isinstance(data[k], dict)]
+                has_stages = len(stage_blocks) >= 1
+
+                if not has_schedule and not has_stages:
+                    issues.append(
+                        "cron.config.yaml missing 'schedule' field (or 'stage*' blocks)"
+                    )
+                if not has_delivery and not has_stages:
+                    issues.append(
+                        "cron.config.yaml missing 'delivery' field (or 'stage*' blocks)"
+                    )
+
+                # If multi-stage, each stage must have schedule
+                for stage_name in stage_blocks:
+                    if "schedule" not in data[stage_name]:
+                        issues.append(
+                            f"cron.config.yaml stage '{stage_name}' missing 'schedule' field"
+                        )
         except yaml.YAMLError as e:
             issues.append(f"cron.config.yaml is not valid YAML: {e}")
 
